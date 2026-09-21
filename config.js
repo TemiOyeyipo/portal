@@ -10,4 +10,4 @@ window.ABBS_CONFIG = {
   LOGO_FILE_ID: '1_WOuCpKK8wK2xyQ7b4hb4G6A7uOV8TFB'
 };
 
-// NEVER put the access key in this file. Staff type it on the sign-in screen.
+// NEVER put the access key in this file. Staff type it on the sign-in screen. 
