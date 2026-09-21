@@ -2,406 +2,1274 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0B1F3A">
   <meta name="robots" content="noindex, nofollow">
-  <title>ABBS Portal</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%AB%3C/text%3E%3C/svg%3E">
-
+  <!-- Your settings (Apps Script URL, logo file ID) live in config.js -->
+  <script src="config.js"></script>
+  <title>ABBS Finance Management System</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Brand palette: navy blue with a touch of gold
+    tailwind.config = {
+      theme: { extend: { colors: {
+        navy: { 50:'#F2F5FA', 100:'#E3E9F3', 200:'#C2CEE3', 300:'#92A6C9', 400:'#5F7BAD', 500:'#3A5A91',
+                600:'#274677', 700:'#1B3560', 800:'#122A4D', 900:'#0B1F3A', 950:'#07152A' },
+        gold: { 50:'#FCF8E8', 100:'#F8EFC8', 200:'#F0DE93', 300:'#E6CB5F', 400:'#D4AF37', 500:'#B8941F',
+                600:'#977718', 700:'#765C15', 800:'#5A4611', 900:'#3F300C' }
+      } } }
+    };
+  </script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    :root {
-      --navy-900: #0B1F3A; --navy-800: #122A4D; --navy-700: #1B3560; --navy-600: #274677;
-      --navy-400: #5F7BAD; --navy-200: #C2CEE3; --navy-100: #E3E9F3; --navy-50: #F2F5FA;
-      --gold-500: #B8941F; --gold-400: #D4AF37; --gold-300: #E6CB5F; --gold-50: #FCF8E8;
-      --bar: 56px;
-    }
-    * { box-sizing: border-box; }
-    [hidden] { display: none !important; }
-    html, body { height: 100%; margin: 0; }
-    body {
-      display: flex; flex-direction: column; height: 100vh; height: 100dvh;
-      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      color: var(--navy-900); background: var(--navy-50);
-      -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent;
-    }
-    a, button { touch-action: manipulation; }
-    :focus-visible { outline: 3px solid var(--gold-400); outline-offset: 2px; }
+    .active-nav { background-color: #122A4D; border-left: 4px solid #D4AF37; }
 
-    /* ---------- icons ---------- */
-    .ic { width: 1.5rem; height: 1.5rem; fill: none; stroke: currentColor; stroke-width: 2;
-          stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    /* Bottom navigation (phones) */
+    .active-mnav { color: #ffffff; background-color: #122A4D; box-shadow: inset 0 3px 0 #D4AF37; }
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
 
-    /* ---------- top bar ---------- */
-    .topbar {
-      flex: none; position: relative; z-index: 30;
-      display: flex; align-items: center; gap: 10px;
-      height: calc(var(--bar) + env(safe-area-inset-top));
-      padding: env(safe-area-inset-top) max(10px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
-      background: var(--navy-900); color: #fff; border-bottom: 3px solid var(--gold-400);
-    }
-    .iconbtn {
-      width: 44px; height: 44px; flex: none; display: inline-flex; align-items: center; justify-content: center;
-      border: 0; border-radius: 10px; background: transparent; color: inherit; cursor: pointer; text-decoration: none;
-    }
-    .iconbtn:hover { background: rgba(255, 255, 255, .12); }
-    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
-    .brand-title { font-weight: 700; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .logo-tile {
-      width: 36px; height: 36px; flex: none; display: flex; align-items: center; justify-content: center;
-      border-radius: 9px; background: var(--gold-400); color: var(--navy-900);
-    }
-    .logo-tile .ic { width: 1.35rem; height: 1.35rem; }
-    .brand-logo {
-      height: 36px; width: auto; max-width: 64px; object-fit: contain; flex: none;
-      background: #fff; border-radius: 9px; padding: 3px; box-shadow: 0 0 0 2px var(--gold-400);
-    }
+    html { -webkit-text-size-adjust: 100%; }
 
-    /* thin gold loading line under the top bar */
-    #bar { position: absolute; left: 0; right: 0; bottom: -3px; height: 3px; overflow: hidden; opacity: 0; transition: opacity .2s; pointer-events: none; }
-    #bar::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 35%; background: #fff; animation: slide 1s ease-in-out infinite; }
-    body.loading #bar { opacity: 1; }
-    @keyframes slide { 0% { left: -35%; } 100% { left: 100%; } }
-
-    /* ---------- menu drawer ---------- */
-    #scrim {
-      position: fixed; inset: 0; z-index: 40; background: rgba(7, 21, 42, .6);
-      opacity: 0; visibility: hidden; transition: opacity .2s, visibility 0s .2s;
+    /* Gold focus ring on every field, so it is always clear which box you are typing in */
+    input:focus, select:focus, textarea:focus {
+      outline: none; border-color: #D4AF37; box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.55);
     }
-    #drawer {
-      position: fixed; top: 0; bottom: 0; left: 0; z-index: 50; width: min(320px, 86vw);
-      display: flex; flex-direction: column; background: var(--navy-900); color: #fff;
-      padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
-      box-shadow: 8px 0 30px rgba(0, 0, 0, .35);
-      transform: translateX(-102%); visibility: hidden; transition: transform .25s ease, visibility 0s .25s;
-    }
-    body.menu-open #scrim { opacity: 1; visibility: visible; transition-delay: 0s; }
-    body.menu-open #drawer { transform: none; visibility: visible; transition: transform .25s ease; }
-    .drawer-head { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; min-height: var(--bar); border-bottom: 1px solid var(--navy-800); }
-    .drawer-head .brand-title { flex: 1; }
-    .drawer-label { padding: 16px 18px 6px; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--navy-400); font-weight: 700; }
-    #menu-list { list-style: none; margin: 0; padding: 0 10px; overflow-y: auto; }
-    .navlink {
-      display: flex; align-items: center; gap: 14px; min-height: 50px; padding: 10px 12px; margin: 2px 0;
-      border-radius: 10px; border-left: 4px solid transparent; color: var(--navy-100); text-decoration: none; font-weight: 600;
-    }
-    .navlink .ic { color: var(--gold-400); }
-    .navlink:hover { background: var(--navy-800); }
-    .navlink[aria-current="page"] { background: var(--navy-800); border-left-color: var(--gold-400); color: #fff; }
-    .drawer-foot { margin-top: auto; padding: 14px 18px; font-size: .78rem; color: var(--navy-400); border-top: 1px solid var(--navy-800); }
+    button, select, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
-    /* ---------- stage: home page + app frames ---------- */
-    #stage { position: relative; flex: 1; min-height: 0; }
-    .pane { position: absolute; inset: 0; width: 100%; height: 100%; }
-    iframe.pane { border: 0; background: var(--navy-50); }
-    #home { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    /* ---------- PHONE LAYOUT (below 768px) ---------- */
+    @media (max-width: 767px) {
+      /* 16px text stops the browser zooming in on focus, and bigger fields are easier to tap */
+      input, select, textarea { font-size: 16px !important; }
+      input:not([type="checkbox"]):not([type="radio"]), select { min-height: 46px; }
+      form button[type="submit"] { min-height: 48px; font-size: 16px; }
 
-    .hero {
-      background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 60%, var(--navy-700) 100%);
-      color: #fff; padding: 36px 20px 84px; border-bottom: 4px solid var(--gold-400);
-    }
-    .hero-inner { max-width: 1040px; margin: 0 auto; }
-    .eyebrow { margin: 0 0 8px; color: var(--gold-300); font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; }
-    .hero h1 { margin: 0; font-size: clamp(1.7rem, 5vw, 2.5rem); line-height: 1.15; }
-    .lead { margin: 12px 0 0; max-width: 34rem; color: var(--navy-200); font-size: 1rem; line-height: 1.5; }
-    .lead .ic { width: 1.1rem; height: 1.1rem; vertical-align: -0.2em; color: var(--gold-300); }
-
-    .wrap { max-width: 1040px; margin: -56px auto 0; padding: 0 20px 28px; }
-    .cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    .card {
-      display: flex; flex-direction: column; gap: 10px; padding: 20px; min-height: 190px;
-      background: #fff; color: var(--navy-900); text-decoration: none;
-      border: 1px solid var(--navy-100); border-top: 4px solid var(--navy-100); border-radius: 16px;
-      box-shadow: 0 1px 2px rgba(11, 31, 58, .06), 0 8px 20px rgba(11, 31, 58, .06);
-      transition: transform .15s, box-shadow .15s, border-top-color .15s;
-    }
-    .card:hover { transform: translateY(-3px); border-top-color: var(--gold-400); box-shadow: 0 12px 28px rgba(11, 31, 58, .14); }
-    .card-icon { width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; border-radius: 14px; background: var(--navy-900); color: var(--gold-400); }
-    .card-icon .ic { width: 1.7rem; height: 1.7rem; }
-    .card h2 { margin: 4px 0 0; font-size: 1.2rem; }
-    .card p { margin: 0; color: var(--navy-600); font-size: .93rem; line-height: 1.45; }
-    .card .open { margin-top: auto; display: flex; align-items: center; gap: 8px; color: var(--navy-700); font-weight: 700; font-size: .92rem; }
-    .card .open .ic { width: 1.1rem; height: 1.1rem; transition: transform .15s; }
-    .card:hover .open .ic { transform: translateX(4px); }
-    .foot { margin: 28px 0 0; text-align: center; color: var(--navy-400); font-size: .8rem; }
-
-    /* ---------- "cannot find this app" panel ---------- */
-    #status { display: flex; align-items: center; justify-content: center; padding: 20px; background: var(--navy-50); overflow-y: auto; }
-    .status-card { max-width: 30rem; background: #fff; border: 1px solid var(--navy-100); border-top: 4px solid var(--gold-400); border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 8px 24px rgba(11, 31, 58, .1); }
-    .status-card h2 { margin: 0 0 8px; font-size: 1.25rem; }
-    .status-card p { margin: 0 0 16px; color: var(--navy-600); line-height: 1.5; }
-    .status-card code { background: var(--gold-50); border: 1px solid #F0DE93; border-radius: 6px; padding: 1px 6px; font-size: .9em; word-break: break-all; }
-    .btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-    .btn { min-height: 46px; padding: 0 18px; border-radius: 10px; border: 1px solid var(--navy-200); background: #fff; color: var(--navy-800); font: inherit; font-weight: 700; cursor: pointer; }
-    .btn.primary { background: var(--gold-400); border-color: var(--gold-400); color: var(--navy-900); }
-    .btn:hover { filter: brightness(.96); }
-
-    @media (min-width: 768px) {
-      .hero { padding: 52px 32px 96px; }
-      .wrap { padding: 0 32px 40px; }
-      .brand-title { font-size: 1.15rem; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      * { transition: none !important; animation: none !important; }
+      /* Tables turn into one card per row, with the column name shown beside each value */
+      .rtable, .rtable tbody { display: block; width: 100%; }
+      .rtable thead { display: none; }
+      .rtable tr { display: block; padding: 0.7rem 1rem; }
+      .rtable td {
+        display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+        padding: 0.22rem 0 !important; text-align: right !important;
+        font-size: 0.875rem; overflow-wrap: anywhere;
+      }
+      .rtable td::before {
+        content: attr(data-label); flex: 0 0 auto; padding-top: 0.15rem;
+        font-size: 0.68rem; font-weight: 700; letter-spacing: 0.04em;
+        text-transform: uppercase; color: #7D8FB0; text-align: left;
+      }
+      .rtable td[colspan] { display: block; text-align: center !important; }
+      .rtable td[colspan]::before { content: none; }
+      .rtable td.actions { display: block; padding-top: 0.6rem !important; }
+      .rtable td.actions::before { content: none; }
+      .rtable td.actions button { width: 100%; min-height: 44px; font-size: 0.9rem; }
+      .m-hide { display: none !important; }
     }
   </style>
 </head>
-<body>
+<body class="bg-navy-50 font-sans text-navy-900 min-h-screen md:flex md:h-screen md:overflow-hidden">
 
-  <!-- Icon library (drawn once, reused everywhere) -->
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
-    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
-    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
-    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
-    <symbol id="i-reload" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></symbol>
-    <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
-    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></symbol>
-    <symbol id="i-cap" viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v6"/></symbol>
-    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/><path d="M9 15l2 2 4-4"/></symbol>
-    <symbol id="i-cash" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/></symbol>
-    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></symbol>
-  </svg>
-
-  <!-- TOP BAR -->
-  <header class="topbar">
-    <button id="menu-btn" class="iconbtn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="drawer">
-      <svg class="ic"><use href="#i-menu"/></svg>
-    </button>
-    <div class="brand">
-      <span class="logo-tile brand-fallback"><svg class="ic"><use href="#i-cap"/></svg></span>
-      <img class="brand-logo" alt="ABBS logo" hidden>
-      <span id="page-title" class="brand-title">ABBS Portal</span>
-    </div>
-    <button id="reload-btn" class="iconbtn" type="button" aria-label="Reload this app" title="Reload this app" hidden>
-      <svg class="ic"><use href="#i-reload"/></svg>
-    </button>
-    <a id="newtab-btn" class="iconbtn" href="#" target="_blank" rel="noopener" aria-label="Open this app in a new tab" title="Open this app in a new tab" hidden>
-      <svg class="ic"><use href="#i-external"/></svg>
-    </a>
-    <div id="bar" aria-hidden="true"></div>
-  </header>
-
-  <!-- MENU DRAWER -->
-  <div id="scrim"></div>
-  <nav id="drawer" aria-label="Portal menu" aria-hidden="true">
-    <div class="drawer-head">
-      <span class="logo-tile brand-fallback"><svg class="ic"><use href="#i-cap"/></svg></span>
-      <img class="brand-logo" alt="" hidden>
-      <span class="brand-title">ABBS Portal</span>
-      <button id="close-btn" class="iconbtn" type="button" aria-label="Close menu"><svg class="ic"><use href="#i-close"/></svg></button>
-    </div>
-    <div class="drawer-label">Switch to</div>
-    <ul id="menu-list"></ul>
-    <div class="drawer-foot">Each app keeps its own sign-in and its place, so you can switch back and forth freely.</div>
-  </nav>
-
-  <!-- STAGE: landing page and the apps -->
-  <main id="stage">
-    <section id="home" class="pane" aria-label="Portal home">
-      <div class="hero">
-        <div class="hero-inner">
-          <p class="eyebrow">ABBS Portal</p>
-          <h1>Welcome to the ABBS Portal</h1>
-          <p class="lead">Pick a workspace below. You can switch between them at any time with the menu button
-            <svg class="ic"><use href="#i-menu"/></svg> at the top left.</p>
+  <!-- SIDEBAR NAVIGATION (tablet / desktop) -->
+  <aside class="hidden md:flex w-64 bg-navy-900 text-white flex-col justify-between shrink-0">
+    <div>
+      <div class="p-5 border-b border-navy-800 flex items-center gap-3">
+        <div class="brand-fallback bg-gold-400 text-navy-900 p-2 rounded-lg font-bold"><i class="fa-solid fa-graduation-cap"></i></div>
+        <img class="brand-logo hidden h-10 w-auto max-w-[56px] shrink-0 object-contain bg-white rounded-lg p-1 ring-2 ring-gold-400" alt="ABBS logo">
+        <div>
+          <h1 class="font-bold text-lg leading-none">ABBS Finance</h1>
+          <span class="text-xs text-navy-300">School Financial Hub v1.3</span>
         </div>
       </div>
-      <div class="wrap">
-        <div id="cards" class="cards"></div>
-        <p class="foot">&copy; <span id="year"></span> ABBS</p>
+
+      <nav class="mt-4 px-2 space-y-1">
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn active-nav w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-navy-800 transition">
+          <i class="fa-solid fa-chart-line text-gold-400 w-5"></i> Dashboard
+        </button>
+        <button onclick="switchTab('student-ledger')" id="nav-student-ledger" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-navy-800 transition">
+          <i class="fa-solid fa-id-card text-gold-400 w-5"></i> Student Fee Ledger
+        </button>
+        <button onclick="switchTab('inflow')" id="nav-inflow" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-navy-800 transition">
+          <i class="fa-solid fa-hand-holding-dollar text-gold-400 w-5"></i> General Inflow
+        </button>
+        <button onclick="switchTab('outflow')" id="nav-outflow" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-navy-800 transition">
+          <i class="fa-solid fa-file-invoice-dollar text-gold-400 w-5"></i> Expense Entry
+        </button>
+        <button onclick="switchTab('imprest')" id="nav-imprest" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-navy-800 transition">
+          <i class="fa-solid fa-wallet text-gold-400 w-5"></i> Petty Cash (Imprest)
+        </button>
+        <button onclick="switchTab('audit')" id="nav-audit" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-md hover:bg-navy-800 transition">
+          <i class="fa-solid fa-clock-rotate-left text-gold-400 w-5"></i> Audit Trail
+        </button>
+      </nav>
+    </div>
+
+    <div class="p-4 border-t border-navy-800 text-xs text-navy-300 space-y-1">
+      <div>Currency: <span class="text-gold-300 font-semibold">NGN (₦)</span></div>
+      <div id="who-row" class="hidden">Signed in as <span id="who" class="text-gold-300 font-semibold break-all"></span></div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-1 flex flex-col min-w-0 md:overflow-y-auto">
+
+    <!-- Shown only while config.js has no API_URL -->
+    <div id="demo-banner" class="hidden bg-gold-100 text-navy-900 text-xs text-center py-2 px-3 border-b border-gold-300">
+      Demo mode: this page is not connected to your Google Sheet yet. Add your Apps Script URL in <strong>config.js</strong>.
+    </div>
+
+    <!-- TOP HEADER -->
+    <header class="bg-white border-b-2 border-gold-400 px-4 md:px-8 py-3 md:py-4 flex justify-between items-center gap-3 sticky top-0 z-20">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="brand-fallback md:hidden bg-navy-900 text-gold-400 w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+          <i class="fa-solid fa-graduation-cap text-sm"></i>
+        </div>
+        <img class="brand-logo hidden md:hidden h-9 w-auto max-w-[64px] object-contain shrink-0" alt="ABBS logo">
+        <h2 id="page-title" class="text-base md:text-xl font-bold text-navy-900 truncate"><span class="md:hidden">Dashboard</span><span class="hidden md:inline">Financial Dashboard</span></h2>
       </div>
-    </section>
+      <div class="flex items-center gap-3 shrink-0">
+        <button onclick="refreshData()" aria-label="Refresh" class="px-3 py-2 md:py-1.5 text-xs font-semibold text-navy-700 bg-navy-50 hover:bg-navy-100 rounded border border-navy-200 transition">
+          <i class="fa-solid fa-rotate"></i><span class="hidden sm:inline"> Refresh</span>
+        </button>
+        <button id="btn-signout" onclick="signOut()" aria-label="Sign out" title="Sign out" class="hidden px-3 py-2 md:py-1.5 text-xs font-semibold text-navy-700 bg-navy-50 hover:bg-navy-100 rounded border border-navy-200 transition">
+          <i class="fa-solid fa-right-from-bracket"></i><span class="hidden sm:inline"> Sign out</span>
+        </button>
+        <span class="hidden sm:inline-block text-sm bg-gold-50 text-navy-800 border border-gold-300 px-3 py-1 rounded-full font-medium">Session: 2026</span>
+      </div>
+    </header>
 
-    <div id="frames"></div>
+    <div class="p-4 md:p-8 space-y-4 md:space-y-6 pb-28 md:pb-8">
 
-    <section id="status" class="pane" hidden aria-live="polite"></section>
+      <!-- SECTION 1: DASHBOARD VIEW -->
+      <section id="view-dashboard" class="tab-view space-y-4 md:space-y-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+          <div class="bg-white p-3 md:p-5 rounded-xl border border-navy-100 shadow-sm min-w-0">
+            <span class="text-[10px] md:text-xs font-bold text-navy-400 uppercase tracking-wider">Total Revenue</span>
+            <div id="stat-revenue" class="text-base sm:text-xl 2xl:text-2xl font-black text-emerald-600 mt-1 break-words md:break-normal md:whitespace-nowrap">₦0.00</div>
+          </div>
+          <div class="bg-white p-3 md:p-5 rounded-xl border border-navy-100 shadow-sm min-w-0">
+            <span class="text-[10px] md:text-xs font-bold text-navy-400 uppercase tracking-wider">Total Expenses</span>
+            <div id="stat-expenses" class="text-base sm:text-xl 2xl:text-2xl font-black text-rose-600 mt-1 break-words md:break-normal md:whitespace-nowrap">₦0.00</div>
+          </div>
+          <div class="bg-white p-3 md:p-5 rounded-xl border border-navy-100 shadow-sm min-w-0">
+            <span class="text-[10px] md:text-xs font-bold text-navy-400 uppercase tracking-wider">Imprest Balance</span>
+            <div id="stat-imprest" class="text-base sm:text-xl 2xl:text-2xl font-black text-gold-700 mt-1 break-words md:break-normal md:whitespace-nowrap">₦0.00</div>
+          </div>
+          <div class="bg-navy-900 p-3 md:p-5 rounded-xl border border-navy-900 shadow-sm min-w-0">
+            <span class="text-[10px] md:text-xs font-bold text-navy-200 uppercase tracking-wider">Net Position</span>
+            <div id="stat-net" class="text-base sm:text-xl 2xl:text-2xl font-black text-gold-300 mt-1 break-words md:break-normal md:whitespace-nowrap">₦0.00</div>
+          </div>
+        </div>
+        <p class="text-xs text-navy-400">Totals count POSTED entries only. Imprest funding (transfers) and voided entries are not counted as revenue or expenses.</p>
+
+        <div class="bg-white rounded-xl border border-navy-100 shadow-sm overflow-hidden">
+          <div class="p-4 md:p-5 border-b border-navy-100 font-bold text-navy-800 flex justify-between items-center">
+            <span>Recent Financial Activity</span>
+            <span class="text-xs text-navy-400 font-normal">Latest 50</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="rtable w-full text-left text-sm">
+              <thead class="bg-navy-50 text-navy-600 font-semibold border-b">
+                <tr>
+                  <th class="p-3">Txn ID</th>
+                  <th class="p-3">Date</th>
+                  <th class="p-3">Type</th>
+                  <th class="p-3">Category</th>
+                  <th class="p-3">Cohort</th>
+                  <th class="p-3">Imprest</th>
+                  <th class="p-3 text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody id="dashboard-txn-tbody" class="divide-y divide-navy-100">
+                <tr><td colspan="7" class="p-4 text-center text-navy-400">Loading data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: STUDENT FEE LEDGER & RECEIPT GENERATOR -->
+      <section id="view-student-ledger" class="tab-view hidden space-y-4 md:space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+
+          <!-- LEFT: Student Fee Form -->
+          <div class="bg-white p-4 sm:p-6 rounded-xl border border-navy-100 shadow-sm space-y-4">
+            <h3 class="text-lg font-bold text-navy-900 border-b pb-3 flex items-center gap-2">
+              <i class="fa-solid fa-receipt text-gold-500"></i> Record Student Fee
+            </h3>
+
+            <form id="form-student-fee" onsubmit="handleStudentFeeSubmit(event)">
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-xs font-bold text-navy-700 mb-1">Student ID *</label>
+                  <input type="text" name="StudentID" required placeholder="e.g., STU-2026-089" autocomplete="off" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none">
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-navy-700 mb-1">Student Full Name *</label>
+                  <input type="text" name="StudentName" required placeholder="e.g., Jane Doe" autocomplete="off" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-bold text-navy-700 mb-1">Date</label>
+                    <input type="date" name="Date" required class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-navy-700 mb-1">Amount (₦) *</label>
+                    <input type="number" inputmode="decimal" step="0.01" min="0.01" name="Amount" required placeholder="0.00" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-navy-700 mb-1">Cohort / Program</label>
+                  <select name="CohortID" id="student-cohort-select" required class="w-full border rounded-lg p-2.5 text-sm outline-none bg-white">
+                    <!-- Populated dynamically -->
+                  </select>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-bold text-navy-700 mb-1">Deposit Account</label>
+                    <select name="AccountID" id="student-account-select" required class="w-full border rounded-lg p-2.5 text-sm outline-none bg-white">
+                      <!-- Populated dynamically -->
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-navy-700 mb-1">Method</label>
+                    <select name="PaymentMethod" class="w-full border rounded-lg p-2.5 text-sm outline-none bg-white">
+                      <option value="Bank Transfer">Bank Transfer</option>
+                      <option value="Cash">Cash</option>
+                      <option value="POS">POS</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-navy-700 mb-1">Notes / Term / Purpose</label>
+                  <input type="text" name="Description" placeholder="e.g., 1st Semester Tuition Balance" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+                </div>
+              </div>
+
+              <button type="submit" id="btn-submit-student-fee" class="mt-4 w-full bg-navy-800 hover:bg-navy-900 text-white font-bold py-2.5 rounded-lg transition shadow-sm flex justify-center items-center gap-2">
+                <i class="fa-solid fa-file-pdf"></i> Save & Generate PDF Receipt
+              </button>
+            </form>
+          </div>
+
+          <!-- RIGHT: Student Ledger Table -->
+          <div class="lg:col-span-2 bg-white rounded-xl border border-navy-100 shadow-sm flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-navy-100 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-navy-50">
+              <h4 class="font-bold text-navy-800">Student Payment History</h4>
+              <div class="w-full sm:w-64">
+                <input type="search" id="ledger-search" onkeyup="filterStudentLedger()" oninput="filterStudentLedger()" placeholder="Search Student ID or Name..." class="w-full border rounded-lg px-3 py-1.5 text-xs outline-none">
+              </div>
+            </div>
+
+            <div class="overflow-x-auto flex-1">
+              <table class="rtable w-full text-left text-sm">
+                <thead class="bg-navy-100 text-navy-600 font-semibold border-b">
+                  <tr>
+                    <th class="p-3">Txn ID</th>
+                    <th class="p-3">Date</th>
+                    <th class="p-3">Student Info</th>
+                    <th class="p-3">Cohort</th>
+                    <th class="p-3 text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="student-ledger-tbody" class="divide-y divide-navy-100">
+                  <tr><td colspan="5" class="p-4 text-center text-navy-400">Loading student records...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- SECTION 3: GENERAL INFLOW FORM -->
+      <section id="view-inflow" class="tab-view hidden max-w-2xl mx-auto">
+        <div class="bg-white p-4 sm:p-6 rounded-xl border border-navy-100 shadow-sm space-y-4">
+          <h3 class="text-lg font-bold text-navy-900 border-b pb-3">Record General Revenue / Inflow Entry</h3>
+
+          <form id="form-inflow" onsubmit="handleTransactionSubmit(event, 'INFLOW')">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div>
+                <label class="block text-xs font-bold text-navy-700 mb-1">Date</label>
+                <input type="date" name="Date" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-navy-700 mb-1">Amount (₦)</label>
+                <input type="number" inputmode="decimal" step="0.01" min="0.01" name="Amount" required placeholder="0.00" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-3">
+              <div>
+                <label class="block text-xs font-bold text-navy-700 mb-1">Category</label>
+                <select name="CategoryID" id="inflow-category-select" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none bg-white">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-navy-700 mb-1">Cohort / Class</label>
+                <select name="CohortID" id="inflow-cohort-select" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none bg-white">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-3">
+              <div>
+                <label class="block text-xs font-bold text-navy-700 mb-1">Target Account</label>
+                <select name="AccountID" id="inflow-account-select" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none bg-white">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-navy-700 mb-1">Payment Method</label>
+                <select name="PaymentMethod" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none bg-white">
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Cash">Cash</option>
+                  <option value="POS">POS</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <label class="block text-xs font-bold text-navy-700 mb-1">Description / Reference</label>
+              <textarea name="Description" rows="2" placeholder="e.g., Miscellaneous institutional revenue" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none"></textarea>
+            </div>
+
+            <button type="submit" class="mt-4 w-full bg-navy-800 hover:bg-navy-900 text-white font-bold py-2.5 rounded-lg transition shadow-sm">
+              Post General Inflow Record
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- SECTION 4: EXPENSE / OUTFLOW FORM -->
+      <section id="view-outflow" class="tab-view hidden max-w-2xl mx-auto">
+        <div class="bg-white p-4 sm:p-6 rounded-xl border border-navy-100 shadow-sm space-y-4">
+          <h3 class="text-lg font-bold text-navy-900 border-b pb-3">Record Institutional Expense</h3>
+
+          <form id="form-outflow" onsubmit="handleTransactionSubmit(event, 'OUTFLOW')">
+
+            <!-- Pay this expense out of an imprest (optional) -->
+            <div class="bg-gold-50 border border-gold-300 rounded-lg p-3 mb-4">
+              <label class="block text-xs font-bold text-navy-800 mb-1"><i class="fa-solid fa-wallet"></i> Paid from an imprest? (optional)</label>
+              <select name="ImprestID" id="outflow-imprest-select" onchange="onImprestSelected()" class="w-full border border-gold-300 bg-white rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none">
+                <option value="">Not from an imprest</option>
+              </select>
+              <p id="outflow-imprest-hint" class="hidden text-xs text-navy-800 mt-1.5"></p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div>
+                <label class="block text-xs font-bold text-navy-700 mb-1">Date</label>
+                <input type="date" name="Date" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-navy-700 mb-1">Amount (₦)</label>
+                <input type="number" inputmode="decimal" step="0.01" min="0.01" name="Amount" required placeholder="0.00" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-3">
+              <div>
+                <label class="block text-xs font-bold text-navy-700 mb-1">Category</label>
+                <select name="CategoryID" id="outflow-category-select" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none bg-white">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-navy-700 mb-1">Cohort / Cost Center</label>
+                <select name="CohortID" id="outflow-cohort-select" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none bg-white">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-3">
+              <div>
+                <label class="block text-xs font-bold text-navy-700 mb-1">Paid From Account</label>
+                <select name="AccountID" id="outflow-account-select" required class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none bg-white disabled:bg-navy-50 disabled:text-navy-400">
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-navy-700 mb-1">Payment Method</label>
+                <select name="PaymentMethod" id="outflow-method-select" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none bg-white">
+                  <option value="Cash">Cash</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Cheque">Cheque</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <label class="block text-xs font-bold text-navy-700 mb-1">Description / Vendor / Purpose</label>
+              <textarea name="Description" rows="2" placeholder="e.g., Purchase of classroom whiteboards" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-gold-400 outline-none"></textarea>
+            </div>
+
+            <button type="submit" class="mt-4 w-full bg-navy-800 hover:bg-navy-900 text-white font-bold py-2.5 rounded-lg transition shadow-sm">
+              Post Expense Outflow Record
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- SECTION 5: IMPREST (PETTY CASH) VIEW -->
+      <section id="view-imprest" class="tab-view hidden space-y-4 md:space-y-6">
+        <div class="flex flex-wrap justify-between items-center gap-3">
+          <h3 class="text-base md:text-lg font-bold text-navy-900">Petty Cash (Imprest) Operations</h3>
+          <button onclick="openIssueImprest()" class="w-full sm:w-auto bg-gold-400 hover:bg-gold-500 text-navy-900 font-bold text-sm px-4 py-3 sm:py-2 rounded-lg transition">
+            + Issue New Imprest
+          </button>
+        </div>
+
+        <div class="bg-white rounded-xl border border-navy-100 shadow-sm overflow-hidden">
+          <div class="p-4 border-b font-bold text-navy-800">Imprest Register</div>
+          <div class="overflow-x-auto">
+            <table class="rtable w-full text-left text-sm">
+              <thead class="bg-navy-50 text-navy-600 font-semibold border-b">
+                <tr>
+                  <th class="p-3">Imprest ID</th>
+                  <th class="p-3">Issued Date</th>
+                  <th class="p-3">Recipient</th>
+                  <th class="p-3">Purpose</th>
+                  <th class="p-3 text-right">Issued</th>
+                  <th class="p-3 text-right">Spent</th>
+                  <th class="p-3 text-right">Outstanding</th>
+                  <th class="p-3">Status</th>
+                  <th class="p-3"></th>
+                </tr>
+              </thead>
+              <tbody id="imprest-tbody" class="divide-y divide-navy-100">
+                <tr><td colspan="9" class="p-4 text-center text-navy-400">Loading imprest records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 6: AUDIT LOG VIEW -->
+      <section id="view-audit" class="tab-view hidden">
+        <div class="bg-white rounded-xl border border-navy-100 shadow-sm overflow-hidden">
+          <div class="p-4 border-b font-bold text-navy-800 flex justify-between items-center">
+            <span>System Audit Trail</span>
+            <span class="text-xs text-navy-400 font-normal">Latest 200</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="rtable w-full text-left text-sm">
+              <thead class="bg-navy-50 text-navy-600 border-b">
+                <tr>
+                  <th class="p-3">Audit ID</th>
+                  <th class="p-3">Timestamp</th>
+                  <th class="p-3">User</th>
+                  <th class="p-3">Action</th>
+                  <th class="p-3">Record Type</th>
+                  <th class="p-3">Record ID</th>
+                  <th class="p-3">Details</th>
+                </tr>
+              </thead>
+              <tbody id="audit-tbody" class="divide-y divide-navy-100">
+                <tr><td colspan="7" class="p-4 text-center text-navy-400">Loading audit log...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
   </main>
 
+  <!-- BOTTOM NAVIGATION (phones) -->
+  <nav id="bottom-nav" class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-navy-900 text-navy-200 grid grid-cols-6 border-t border-navy-800 safe-bottom">
+    <button onclick="switchTab('dashboard')" id="mnav-dashboard" class="mnav-btn active-mnav flex flex-col items-center justify-center gap-0.5 py-2 min-h-[58px] text-[10px] font-medium">
+      <i class="fa-solid fa-chart-line text-lg text-gold-400"></i><span>Home</span>
+    </button>
+    <button onclick="switchTab('student-ledger')" id="mnav-student-ledger" class="mnav-btn flex flex-col items-center justify-center gap-0.5 py-2 min-h-[58px] text-[10px] font-medium">
+      <i class="fa-solid fa-id-card text-lg text-gold-400"></i><span>Fees</span>
+    </button>
+    <button onclick="switchTab('inflow')" id="mnav-inflow" class="mnav-btn flex flex-col items-center justify-center gap-0.5 py-2 min-h-[58px] text-[10px] font-medium">
+      <i class="fa-solid fa-hand-holding-dollar text-lg text-gold-400"></i><span>Income</span>
+    </button>
+    <button onclick="switchTab('outflow')" id="mnav-outflow" class="mnav-btn flex flex-col items-center justify-center gap-0.5 py-2 min-h-[58px] text-[10px] font-medium">
+      <i class="fa-solid fa-file-invoice-dollar text-lg text-gold-400"></i><span>Expense</span>
+    </button>
+    <button onclick="switchTab('imprest')" id="mnav-imprest" class="mnav-btn flex flex-col items-center justify-center gap-0.5 py-2 min-h-[58px] text-[10px] font-medium">
+      <i class="fa-solid fa-wallet text-lg text-gold-400"></i><span>Imprest</span>
+    </button>
+    <button onclick="switchTab('audit')" id="mnav-audit" class="mnav-btn flex flex-col items-center justify-center gap-0.5 py-2 min-h-[58px] text-[10px] font-medium">
+      <i class="fa-solid fa-clock-rotate-left text-lg text-gold-400"></i><span>Audit</span>
+    </button>
+  </nav>
+
+  <!-- MODAL: ISSUE IMPREST (bottom sheet on phones) -->
+  <div id="modal-issue-imprest" class="fixed inset-0 bg-navy-900/60 hidden items-end sm:items-center justify-center z-50 sm:p-4">
+    <div class="bg-white rounded-t-2xl sm:rounded-xl w-full sm:max-w-md p-5 sm:p-6 shadow-xl space-y-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h4 class="font-bold text-navy-900">Issue Imprest Funds</h4>
+        <button onclick="toggleModal('modal-issue-imprest', false)" aria-label="Close" class="text-navy-400 hover:text-navy-700 text-3xl leading-none w-10 h-10 -mr-2 flex items-center justify-center">&times;</button>
+      </div>
+      <form id="form-issue-imprest" onsubmit="handleIssueImprest(event)">
+        <div class="space-y-3 text-sm">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1">Date</label>
+              <input type="date" name="Date" required class="w-full border rounded p-2 outline-none">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Amount Issued (₦)</label>
+              <input type="number" inputmode="decimal" step="0.01" min="0.01" name="AmountIssued" required class="w-full border rounded p-2 outline-none">
+            </div>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Recipient Name</label>
+            <input type="text" name="Recipient" required autocomplete="off" class="w-full border rounded p-2 outline-none">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1">Purpose</label>
+            <textarea name="Purpose" rows="2" required class="w-full border rounded p-2 outline-none"></textarea>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-semibold mb-1">Imprest Account</label>
+              <select name="AccountID" id="imprest-account-select" required class="w-full border rounded p-2 outline-none bg-white"></select>
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Cohort / Cost Center</label>
+              <select name="CohortID" id="imprest-cohort-select" required class="w-full border rounded p-2 outline-none bg-white"></select>
+            </div>
+          </div>
+          <p class="text-xs text-navy-600">Issuing an imprest also posts a funding TRANSFER into the imprest account. It is not counted as revenue.</p>
+        </div>
+        <div class="mt-5 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+          <button type="button" onclick="toggleModal('modal-issue-imprest', false)" class="px-4 py-3 sm:py-2 text-sm border rounded hover:bg-navy-50">Cancel</button>
+          <button type="submit" class="px-4 py-3 sm:py-2 text-sm bg-gold-400 text-navy-900 rounded font-bold hover:bg-gold-500">Confirm & Issue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- SIGN-IN SCREEN -->
+  <div id="login-overlay" class="hidden fixed inset-0 z-[60] bg-navy-900 items-center justify-center p-4 overflow-y-auto">
+    <div class="w-full max-w-sm my-auto">
+      <div class="flex flex-col items-center text-center mb-6">
+        <div class="brand-fallback bg-gold-400 text-navy-900 w-14 h-14 rounded-xl flex items-center justify-center text-2xl"><i class="fa-solid fa-graduation-cap"></i></div>
+        <img class="brand-logo hidden h-16 w-auto max-w-[160px] object-contain bg-white rounded-xl p-1.5 ring-2 ring-gold-400" alt="ABBS logo">
+        <h1 class="mt-3 text-2xl font-bold text-white">ABBS Finance</h1>
+        <p class="text-sm text-navy-200">School Financial Hub</p>
+      </div>
+
+      <form id="login-form" onsubmit="handleLogin(event)" class="bg-white rounded-2xl shadow-xl p-5 sm:p-6 space-y-4 border-t-4 border-gold-400">
+        <div>
+          <label class="block text-xs font-bold text-navy-700 mb-1" for="login-user">Your name</label>
+          <input id="login-user" type="text" name="user" required maxlength="60" autocomplete="name" placeholder="e.g., Grace Obi" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-navy-700 mb-1" for="login-key">Access key</label>
+          <input id="login-key" type="password" name="key" required autocomplete="current-password" class="w-full border rounded-lg p-2.5 text-sm outline-none">
+        </div>
+        <label class="flex items-center gap-2 text-sm text-navy-700">
+          <input type="checkbox" name="remember" checked class="h-4 w-4"> Keep me signed in on this device
+        </label>
+        <p id="login-error" class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-2.5"></p>
+        <button type="submit" id="btn-login" class="w-full bg-gold-400 hover:bg-gold-500 text-navy-900 font-bold py-3 rounded-lg transition">Sign in</button>
+      </form>
+      <p class="mt-4 text-center text-xs text-navy-300">Ask the finance office for the access key.</p>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT FRONT-END LOGIC -->
   <script>
-    /* ============================================================
-     * EDIT HERE: the apps in your portal
-     * ------------------------------------------------------------
-     * id          short name used in the address (index.html#finance)
-     * name        shown in the menu and on the home page
-     * path        the HTML file of the app, relative to this index.html
-     * icon        cap | calendar | cash | grid
-     * description one line shown on the home page card
-     * To add an app, copy one line and change it. Order here = order in the menu.
-     * ============================================================ */
-    const MODULES = [
-      { id: 'sis',        name: 'Student SIS', path: 'sis.html',        icon: 'cap',      description: 'Student records, enrolment and profiles.' },
-      { id: 'attendance', name: 'Attendance',  path: 'attendance.html', icon: 'calendar', description: 'Daily registers and attendance tracking.' },
-      { id: 'finance',    name: 'Finance',     path: 'finance.html',    icon: 'cash',     description: 'Fees, expenses, petty cash and receipts.' }
-    ];
+    let appState = {
+      accounts: [],
+      categories: [],
+      cohorts: [],
+      transactions: [],
+      imprests: [],
+      audit: []
+    };
 
-    /* Logo: tried in this order, and the graduation-cap icon stays if none loads.
-       Best: save your logo in the same folder as this file as logo.png. */
-    const LOGO_SOURCES = [
-      'logo.png',
-      'https://drive.google.com/thumbnail?id=1_WOuCpKK8wK2xyQ7b4hb4G6A7uOV8TFB&sz=w200'
-    ];
+    /* ---------- Helpers ---------- */
 
-    /* ============================================================
-     * Nothing below needs editing
-     * ============================================================ */
-    const $ = id => document.getElementById(id);
-    const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-    const icon = key => `<svg class="ic" aria-hidden="true"><use href="#i-${['cap', 'calendar', 'cash', 'grid'].includes(key) ? key : 'grid'}"/></svg>`;
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-    const home = $('home'), frames = $('frames'), status = $('status');
-    const menuBtn = $('menu-btn'), drawer = $('drawer'), pageTitle = $('page-title');
-    const reloadBtn = $('reload-btn'), newTabBtn = $('newtab-btn');
-    const frameById = {};
-    let current = null;      // the module on screen, or null for the home page
-    let openToken = 0;
-
-    /* ---------- build the menu and the home cards from MODULES ---------- */
-    $('menu-list').innerHTML =
-      `<li><a class="navlink" href="#home" data-id="home"><svg class="ic" aria-hidden="true"><use href="#i-home"/></svg><span>Home</span></a></li>` +
-      MODULES.map(m => `<li><a class="navlink" href="#${esc(m.id)}" data-id="${esc(m.id)}">${icon(m.icon)}<span>${esc(m.name)}</span></a></li>`).join('');
-
-    $('cards').innerHTML = MODULES.map(m => `
-      <a class="card" href="#${esc(m.id)}">
-        <span class="card-icon">${icon(m.icon)}</span>
-        <h2>${esc(m.name)}</h2>
-        <p>${esc(m.description)}</p>
-        <span class="open">Open <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
-      </a>`).join('');
-    $('year').textContent = new Date().getFullYear();
-
-    /* ---------- logo ---------- */
-    document.querySelectorAll('.brand-logo').forEach(img => {
-      let i = 0;
-      img.onload = () => {
-        img.hidden = false;
-        document.querySelectorAll('.brand-fallback').forEach(f => f.hidden = true);
-      };
-      img.onerror = () => { i++; if (i < LOGO_SOURCES.length) img.src = LOGO_SOURCES[i]; };
-      img.referrerPolicy = 'no-referrer';
-      img.src = LOGO_SOURCES[0];
-    });
-
-    /* ---------- menu drawer ---------- */
-    function openMenu() {
-      document.body.classList.add('menu-open');
-      drawer.setAttribute('aria-hidden', 'false');
-      menuBtn.setAttribute('aria-expanded', 'true');
-      const target = drawer.querySelector('.navlink[aria-current="page"]') || drawer.querySelector('.navlink');
-      setTimeout(() => target && target.focus(), 30);
+    // Escape text before putting it into HTML
+    function esc(v) {
+      return String(v == null ? '' : v).replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+      ));
     }
-    function closeMenu() {
-      const hadFocus = drawer.contains(document.activeElement);
-      document.body.classList.remove('menu-open');
-      drawer.setAttribute('aria-hidden', 'true');
-      menuBtn.setAttribute('aria-expanded', 'false');
-      if (hadFocus) menuBtn.focus();
-    }
-    const menuIsOpen = () => document.body.classList.contains('menu-open');
 
-    menuBtn.addEventListener('click', () => (menuIsOpen() ? closeMenu() : openMenu()));
-    $('close-btn').addEventListener('click', closeMenu);
-    $('scrim').addEventListener('click', closeMenu);
-    drawer.addEventListener('click', e => { if (e.target.closest('.navlink')) closeMenu(); });
-    document.addEventListener('keydown', e => {
-      if (!menuIsOpen()) return;
-      if (e.key === 'Escape') { closeMenu(); return; }
-      if (e.key === 'Tab') {                        // keep keyboard focus inside the open menu
-        const items = [...drawer.querySelectorAll('button, a[href]')].filter(el => !el.hidden);
-        const first = items[0], last = items[items.length - 1];
-        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    // 'yyyy-mm-dd' -> 'dd-Mon-yyyy' (no time zone conversion, so the day never shifts)
+    function fmtDate(s) {
+      const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || ''));
+      return m ? `${m[3]}-${MONTHS[parseInt(m[2], 10) - 1]}-${m[1]}` : esc(s || '');
+    }
+
+    function money(n) {
+      const v = Number(n) || 0;
+      return (v < 0 ? '-' : '') + '₦' + Math.abs(v).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // Today's date in the user's LOCAL timezone (yyyy-mm-dd), not UTC
+    function todayStr() {
+      const d = new Date();
+      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+      return d.toISOString().split('T')[0];
+    }
+
+    function errText(err) {
+      return err && err.message ? err.message : String(err);
+    }
+
+    function setBusy(btn, busy, busyHtml, normalHtml) {
+      btn.disabled = busy;
+      btn.innerHTML = busy ? busyHtml : normalHtml;
+    }
+
+    /* ---------- Connection to the Google Apps Script web app ---------- */
+
+    // Settings come from config.js
+    const CFG = window.ABBS_CONFIG || {};
+    const API_URL = String(CFG.API_URL || '').trim();
+    const LOGO_FILE_ID = String(CFG.LOGO_FILE_ID || '').trim();
+    const SESSION_STORE_KEY = 'abbs.finance.session';
+    const LAST_USER_KEY = 'abbs.finance.lastUser';
+    let session = null;   // { user, key } once someone is signed in
+
+    function isConnected() { return API_URL !== ''; }
+
+    // Browsers can refuse storage (private mode), so every access is guarded
+    function store(kind) {
+      try { return kind === 'local' ? window.localStorage : window.sessionStorage; } catch (e) { return null; }
+    }
+    function readSession() {
+      for (const kind of ['local', 'session']) {
+        try {
+          const raw = store(kind) && store(kind).getItem(SESSION_STORE_KEY);
+          const s = raw ? JSON.parse(raw) : null;
+          if (s && s.user && s.key) return s;
+        } catch (e) { /* ignore */ }
       }
-    });
+      return null;
+    }
+    function clearSession() {
+      ['local', 'session'].forEach(kind => { try { store(kind) && store(kind).removeItem(SESSION_STORE_KEY); } catch (e) {} });
+    }
+    function writeSession(s, remember) {
+      clearSession();
+      try { store(remember ? 'local' : 'session').setItem(SESSION_STORE_KEY, JSON.stringify(s)); } catch (e) { /* stays signed in for this visit only */ }
+      try { store('local').setItem(LAST_USER_KEY, s.user); } catch (e) {}
+    }
 
-    /* ---------- showing things ---------- */
-    function setLoading(on) { document.body.classList.toggle('loading', !!on); }
+    // One function for every call to the server
+    async function callApi(action, payload) {
+      if (!isConnected()) throw new Error('This page is not connected to the server yet (API_URL is empty in config.js).');
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), 90000);
+      let res;
+      try {
+        res = await fetch(API_URL, {
+          method: 'POST',
+          // text/plain keeps this a "simple" request, so the browser skips the CORS pre-flight that Apps Script cannot answer
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action, key: session ? session.key : '', user: session ? session.user : '', payload: payload || {} }),
+          redirect: 'follow',
+          signal: ctl.signal
+        });
+      } catch (e) {
+        throw new Error(e && e.name === 'AbortError'
+          ? 'The server took too long to answer. Please try again.'
+          : 'Cannot reach the server. Check your internet connection.');
+      } finally {
+        clearTimeout(timer);
+      }
+      let out;
+      try { out = await res.json(); } catch (e) {
+        throw new Error('The server gave an unexpected answer. Check that the Apps Script web app is deployed with "Who has access: Anyone" and that API_URL in config.js is right.');
+      }
+      if (!out || !out.ok) {
+        const err = new Error((out && out.error) || 'The request failed.');
+        err.code = out && out.code;
+        throw err;
+      }
+      return out.data;
+    }
 
-    function setActive(id) {
-      document.querySelectorAll('.navlink').forEach(a => {
-        if (a.dataset.id === id) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+    // Show an error. If the key was refused, send the person back to the sign-in screen.
+    function reportError(prefix, err) {
+      if (err && (err.code === 'AUTH' || err.code === 'LOCKED') && session) { signOut(err.message); return; }
+      alert(prefix + errText(err));
+    }
+
+    /* ---------- Sign in / sign out ---------- */
+
+    function showLogin(message) {
+      document.getElementById('login-overlay').classList.replace('hidden', 'flex');
+      document.body.classList.add('overflow-hidden');
+      const err = document.getElementById('login-error');
+      err.textContent = message || '';
+      err.classList.toggle('hidden', !message);
+      const nameEl = document.getElementById('login-user');
+      const keyEl = document.getElementById('login-key');
+      try { if (!nameEl.value) nameEl.value = store('local').getItem(LAST_USER_KEY) || ''; } catch (e) {}
+      keyEl.value = '';
+      setTimeout(() => (nameEl.value ? keyEl : nameEl).focus(), 50);
+    }
+
+    function hideLogin() {
+      document.getElementById('login-overlay').classList.replace('flex', 'hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    function updateWho() {
+      const signedIn = !!session;
+      document.getElementById('who').textContent = signedIn ? session.user : '';
+      document.getElementById('who-row').classList.toggle('hidden', !signedIn);
+      document.getElementById('btn-signout').classList.toggle('hidden', !signedIn);
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const form = e.target;
+      const btn = document.getElementById('btn-login');
+      const user = form.elements.user.value.trim();
+      const key = form.elements.key.value;
+      const remember = form.elements.remember.checked;
+      if (!user || !key) return;
+
+      setBusy(btn, true, '<i class="fa-solid fa-spinner fa-spin"></i> Signing in...', 'Sign in');
+      session = { user, key };
+      try {
+        const data = await callApi('getFinanceInitialData');   // doubles as the key check
+        writeSession(session, remember);
+        form.elements.key.value = '';
+        hideLogin();
+        updateWho();
+        renderData(data);
+      } catch (err) {
+        session = null;
+        showLogin(errText(err));
+      } finally {
+        setBusy(btn, false, '', 'Sign in');
+      }
+    }
+
+    function signOut(message) {
+      clearSession();
+      session = null;
+      toggleModal('modal-issue-imprest', false);
+      renderData({});          // do not leave figures on the screen of a shared phone
+      switchTab('dashboard');
+      updateWho();
+      showLogin(typeof message === 'string' ? message : '');
+    }
+
+    /* ---------- Menu logo: the same Google Drive file the PDF receipt uses ---------- */
+
+    function driveThumbUrl(id) {
+      return 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(id) + '&sz=w200';
+    }
+
+    // Try each image source in turn. If none loads, the graduation-cap icon simply stays.
+    function showBrandLogo(sources) {
+      if (!sources.length) return;
+      document.querySelectorAll('.brand-logo').forEach(img => {
+        let i = 0;
+        img.onload = () => {
+          img.classList.remove('hidden');
+          document.querySelectorAll('.brand-fallback').forEach(f => f.style.display = 'none');
+        };
+        img.onerror = () => { i++; if (i < sources.length) img.src = sources[i]; };
+        img.referrerPolicy = 'no-referrer';
+        img.src = sources[0];
       });
     }
 
-    function showHome() {
-      openToken++;
-      current = null;
-      home.hidden = false; status.hidden = true;
-      Object.values(frameById).forEach(f => f.hidden = true);
-      setLoading(false); setActive('home');
-      pageTitle.textContent = 'ABBS Portal'; document.title = 'ABBS Portal';
-      reloadBtn.hidden = true; newTabBtn.hidden = true;
+    // Order: (1) the image sent by the script (works even if the Drive file is private),
+    //        (2) the Drive thumbnail link for that file, (3) LOGO_FILE_ID from config.js.
+    function loadBrandLogo() {
+      const direct = LOGO_FILE_ID ? [driveThumbUrl(LOGO_FILE_ID)] : [];
+      if (!isConnected()) { showBrandLogo(direct); return; }
+      callApi('getBrandLogo')
+        .then(res => {
+          const sources = [];
+          if (res && res.dataUri && String(res.dataUri).indexOf('data:image/') === 0) sources.push(res.dataUri);
+          const id = (res && res.fileId) || LOGO_FILE_ID;
+          if (id) sources.push(driveThumbUrl(id));
+          showBrandLogo(sources);
+        })
+        .catch(() => showBrandLogo(direct));
     }
 
-    function showNotFound(mod) {
-      status.innerHTML = `
-        <div class="status-card">
-          <h2>We could not open ${esc(mod.name)}</h2>
-          <p>The file <code>${esc(mod.path)}</code> was not found. Check that it is uploaded to the same folder as
-             <code>index.html</code>, or correct its name in the <code>MODULES</code> list at the top of the script in <code>index.html</code>.</p>
-          <div class="btns">
-            <button class="btn primary" type="button" id="retry-btn">Try again</button>
-            <button class="btn" type="button" id="home-btn">Back to home</button>
-          </div>
-        </div>`;
-      status.hidden = false;
-      $('retry-btn').onclick = () => openModule(mod);
-      $('home-btn').onclick = () => { location.hash = '#home'; };
-    }
+    /* ---------- Start-up ---------- */
 
-    // Some hosts refuse HEAD or block the check; only a clear "not found" counts as missing.
-    async function fileExists(path) {
-      try {
-        const r = await fetch(path, { method: 'HEAD', cache: 'no-store' });
-        return r.status !== 404 && r.status !== 410;
-      } catch (e) { return true; }
-    }
+    window.addEventListener('DOMContentLoaded', () => {
+      const today = todayStr();
+      document.querySelectorAll('input[type="date"]').forEach(i => i.value = today);
+      loadBrandLogo();
 
-    function createFrame(mod) {
-      const f = document.createElement('iframe');
-      f.className = 'pane';
-      f.title = mod.name;
-      f.dataset.id = mod.id;
-      f.allow = 'clipboard-write; fullscreen';
-      f.addEventListener('load', () => { if (current && current.id === mod.id) setLoading(false); });
-      f.src = mod.path;
-      frames.appendChild(f);
-      frameById[mod.id] = f;
-      return f;
-    }
-
-    // Apps stay loaded once opened, so switching back is instant and nothing typed is lost.
-    async function openModule(mod) {
-      const token = ++openToken;
-      current = mod;
-      home.hidden = true; status.hidden = true;
-      Object.values(frameById).forEach(f => f.hidden = f.dataset.id !== mod.id);
-      setActive(mod.id);
-      pageTitle.textContent = mod.name; document.title = mod.name + ' · ABBS Portal';
-      reloadBtn.hidden = false; newTabBtn.hidden = false; newTabBtn.href = mod.path;
-
-      if (frameById[mod.id]) { setLoading(false); return; }
-
-      setLoading(true);
-      const ok = await fileExists(mod.path);
-      if (token !== openToken) return;                 // the person already moved on
-      if (!ok) { setLoading(false); showNotFound(mod); return; }
-      createFrame(mod);
-    }
-
-    reloadBtn.addEventListener('click', () => {
-      const f = current && frameById[current.id];
-      if (!f) return;
-      setLoading(true);
-      try { f.contentWindow.location.reload(); } catch (e) { f.src = f.src; }
+      if (!isConnected()) {                  // preview mode: no server yet, show demo data
+        document.getElementById('demo-banner').classList.remove('hidden');
+        renderData(DEMO_DATA);
+        return;
+      }
+      session = readSession();
+      if (session) { updateWho(); refreshData(); } else { showLogin(); }
     });
 
-    /* ---------- address (#finance) decides what is shown, so Back and links just work ---------- */
-    function route() {
-      const id = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
-      const mod = MODULES.find(m => m.id === id);
-      if (mod) openModule(mod); else showHome();
+    /* ---------- Navigation & modal ---------- */
+
+    const TAB_TITLES = {
+      dashboard:        ['Dashboard',        'Financial Dashboard'],
+      'student-ledger': ['Student Fees',     'Student Fee Ledger & Receipts'],
+      inflow:           ['Income',           'General Revenue Collection'],
+      outflow:          ['Expense',          'Expense Recording'],
+      imprest:          ['Petty Cash',       'Petty Cash & Imprest Management'],
+      audit:            ['Audit Log',        'Audit Log']
+    };
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active-nav'));
+      document.querySelectorAll('.mnav-btn').forEach(el => el.classList.remove('active-mnav'));
+
+      document.getElementById(`view-${tabId}`).classList.remove('hidden');
+      document.getElementById(`nav-${tabId}`).classList.add('active-nav');
+      const mnav = document.getElementById(`mnav-${tabId}`);
+      if (mnav) mnav.classList.add('active-mnav');
+
+      // Short title on phones, full title on larger screens
+      const t = TAB_TITLES[tabId] || ['ABBS Finance', 'ABBS Finance'];
+      document.getElementById('page-title').innerHTML =
+        `<span class="md:hidden">${esc(t[0])}</span><span class="hidden md:inline">${esc(t[1])}</span>`;
+
+      // Start each screen at the top
+      window.scrollTo(0, 0);
+      const main = document.querySelector('main');
+      if (main) main.scrollTop = 0;
     }
-    window.addEventListener('hashchange', route);
-    route();
+
+    function toggleModal(modalId, show) {
+      const modal = document.getElementById(modalId);
+      if (show) modal.classList.replace('hidden', 'flex');
+      else modal.classList.replace('flex', 'hidden');
+      document.body.classList.toggle('overflow-hidden', show);   // stop the page scrolling behind the sheet
+    }
+
+    function openIssueImprest() {
+      const form = document.getElementById('form-issue-imprest');
+      form.querySelector('input[name="Date"]').value = todayStr();
+      toggleModal('modal-issue-imprest', true);
+    }
+
+    /* ---------- Data loading ---------- */
+
+    // Shown only while config.js has no API_URL
+    const DEMO_DATA = {
+          categories: [
+            { CategoryID: 'CAT-001', CategoryType: 'INFLOW', CategoryName: 'School Fees' },
+            { CategoryID: 'CAT-002', CategoryType: 'INFLOW', CategoryName: 'Registration' },
+            { CategoryID: 'CAT-101', CategoryType: 'OUTFLOW', CategoryName: 'Administration' },
+            { CategoryID: 'CAT-102', CategoryType: 'OUTFLOW', CategoryName: 'Transportation' },
+            { CategoryID: 'CAT-201', CategoryType: 'TRANSFER', CategoryName: 'Imprest Funding' }
+          ],
+          cohorts: [
+            { CohortID: 'COH-2026-CERT-01', CohortName: 'Certificate Class 2026' },
+            { CohortID: 'GENERAL', CohortName: 'General ABBS' }
+          ],
+          accounts: [
+            { AccountID: 'ACC-001', AccountName: 'ABBS Cash', AccountType: 'Cash' },
+            { AccountID: 'ACC-004', AccountName: 'Administrator Imprest', AccountType: 'Imprest' }
+          ],
+          transactions: [
+            { TransactionID: 'TXN-2026-000005', Date: '2026-07-11', TransactionType: 'OUTFLOW', CategoryName: 'Transportation', CohortID: 'GENERAL', ImprestID: 'IMP-2026-0002', Status: 'POSTED', Description: 'Transport', Amount: 1000 },
+            { TransactionID: 'TXN-2026-000002', Date: '2026-07-11', TransactionType: 'TRANSFER', CategoryName: 'Imprest Funding', CohortID: 'GENERAL', ImprestID: 'IMP-2026-0002', Status: 'POSTED', Description: 'Imprest received', Amount: 10000 },
+            { TransactionID: 'TXN-2026-000001', Date: '2026-07-11', TransactionType: 'INFLOW', CategoryName: 'School Fees', CohortID: 'COH-2026-CERT-01', ImprestID: '', Status: 'POSTED', Description: '[Student: STU-2026-089 - Jane Doe] Tuition Fee', Amount: 30000 }
+          ],
+          imprests: [
+            { ImprestID: 'IMP-2026-0002', DateIssued: '2026-07-11', Recipient: 'ABBS Administrator', Purpose: 'General ABBS Expenses', AccountID: 'ACC-004', AmountIssued: 10000, AmountSettled: 1000, BalanceOutstanding: 9000, Status: 'OPEN' }
+          ],
+          audit: [
+            { AuditID: 'AUD-2026-0001', Timestamp: '2026-09-19 12:00', User: 'demo', Action: 'CREATE', RecordType: 'FinanceTransactions', RecordID: 'TXN-2026-000005', Field: '', OldValue: '', NewValue: '', Notes: 'OUTFLOW ₦1,000.00 from imprest IMP-2026-0002' }
+          ]
+        };
+
+    function refreshData() {
+      if (!isConnected()) { renderData(DEMO_DATA); return Promise.resolve(); }
+      if (!session) return Promise.resolve();
+      return callApi('getFinanceInitialData')
+        .then(renderData)
+        .catch(err => reportError('Could not load data: ', err));
+    }
+
+    function renderData(data) {
+      appState = Object.assign({ accounts: [], categories: [], cohorts: [], transactions: [], imprests: [], audit: [] }, data || {});
+      populateDropdowns();
+      renderDashboard();
+      renderImprestTable();
+      renderStudentLedgerTable();
+      renderAuditTable();
+    }
+
+    function optionsHtml(items, valueKey, labelFn, emptyText) {
+      return items.length > 0
+        ? items.map(i => `<option value="${esc(i[valueKey])}">${esc(labelFn(i))}</option>`).join('')
+        : `<option value="">${esc(emptyText)}</option>`;
+    }
+
+    // Replace a select's options but keep the current choice if it still exists
+    function setOptions(id, html) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const prev = el.value;
+      el.innerHTML = html;
+      if (prev && Array.from(el.options).some(o => o.value === prev)) el.value = prev;
+    }
+
+    function populateDropdowns() {
+      const cohorts = appState.cohorts || [];
+      const accounts = appState.accounts || [];
+      const categories = appState.categories || [];
+
+      const cohortOptions = optionsHtml(cohorts, 'CohortID', c => c.CohortName || c.CohortID, 'No Cohorts Available');
+      ['inflow-cohort-select', 'outflow-cohort-select', 'student-cohort-select', 'imprest-cohort-select']
+        .forEach(id => setOptions(id, cohortOptions));
+
+      const accountOptions = optionsHtml(accounts, 'AccountID', a => a.AccountName || a.AccountID, 'No Accounts Available');
+      ['inflow-account-select', 'outflow-account-select', 'student-account-select']
+        .forEach(id => setOptions(id, accountOptions));
+
+      // The imprest modal only lists imprest-type accounts (falls back to all accounts)
+      const imprestAccounts = accounts.filter(a => String(a.AccountType).toLowerCase() === 'imprest');
+      setOptions('imprest-account-select', optionsHtml(imprestAccounts.length ? imprestAccounts : accounts,
+        'AccountID', a => a.AccountName || a.AccountID, 'No Accounts Available'));
+
+      // Default the imprest cohort to GENERAL when it exists
+      const impCohort = document.getElementById('imprest-cohort-select');
+      if (impCohort && !impCohort.dataset.init && cohorts.some(c => c.CohortID === 'GENERAL')) {
+        impCohort.value = 'GENERAL';
+        impCohort.dataset.init = '1';
+      }
+
+      const byType = t => categories.filter(c => String(c.CategoryType || '').toUpperCase() === t);
+      setOptions('inflow-category-select',
+        optionsHtml(byType('INFLOW'), 'CategoryID', c => c.CategoryName || c.CategoryID, 'No Inflow Categories'));
+      setOptions('outflow-category-select',
+        optionsHtml(byType('OUTFLOW'), 'CategoryID', c => c.CategoryName || c.CategoryID, 'No Outflow Categories'));
+
+      // Imprests that still have money to spend
+      const openImprests = (appState.imprests || []).filter(i => Number(i.BalanceOutstanding) > 0);
+      const imprestSelect = document.getElementById('outflow-imprest-select');
+      if (imprestSelect) {
+        const prev = imprestSelect.value;
+        imprestSelect.innerHTML = '<option value="">Not from an imprest</option>' +
+          openImprests.map(i => `<option value="${esc(i.ImprestID)}">${esc(i.ImprestID)} · ${esc(i.Recipient)} · ${esc(money(i.BalanceOutstanding))} left</option>`).join('');
+        if (prev && openImprests.some(i => i.ImprestID === prev)) imprestSelect.value = prev;
+      }
+      onImprestSelected();
+    }
+
+    /* ---------- Expense form: paying from an imprest ---------- */
+
+    function onImprestSelected() {
+      const sel = document.getElementById('outflow-imprest-select');
+      const acct = document.getElementById('outflow-account-select');
+      const hint = document.getElementById('outflow-imprest-hint');
+      const method = document.getElementById('outflow-method-select');
+      if (!sel || !acct || !hint) return;
+
+      const imp = (appState.imprests || []).find(i => i.ImprestID === sel.value);
+      if (imp) {
+        if (Array.from(acct.options).some(o => o.value === imp.AccountID)) acct.value = imp.AccountID;
+        acct.disabled = true;   // the account follows the imprest automatically
+        if (method) method.value = 'Cash';
+        hint.innerHTML = `Balance left: <strong>${esc(money(imp.BalanceOutstanding))}</strong>. The account is set to the imprest's account automatically.`;
+        hint.classList.remove('hidden');
+      } else {
+        acct.disabled = false;
+        hint.classList.add('hidden');
+      }
+    }
+
+    // "Record expense" button on an imprest row
+    function startImprestExpense(imprestId) {
+      switchTab('outflow');
+      const sel = document.getElementById('outflow-imprest-select');
+      sel.value = imprestId;
+      onImprestSelected();
+    }
+
+    /* ---------- Rendering ---------- */
+
+    const TYPE_BADGE = {
+      INFLOW: 'bg-emerald-100 text-emerald-800',
+      OUTFLOW: 'bg-rose-100 text-rose-800',
+      TRANSFER: 'bg-gold-100 text-gold-800'
+    };
+    const TYPE_TEXT = { INFLOW: 'text-emerald-600', OUTFLOW: 'text-rose-600', TRANSFER: 'text-gold-700' };
+    const STATUS_BADGE = {
+      ISSUED: 'bg-navy-100 text-navy-800',
+      OPEN: 'bg-gold-100 text-gold-800',
+      SETTLED: 'bg-emerald-100 text-emerald-800',
+      OVERSPENT: 'bg-red-100 text-red-800'
+    };
+
+    function renderDashboard() {
+      let revenue = 0;
+      let expenses = 0;
+
+      const tbody = document.getElementById('dashboard-txn-tbody');
+      const txns = appState.transactions || [];
+
+      // Only POSTED entries count. TRANSFER (imprest funding) is neither revenue nor expense.
+      txns.forEach(t => {
+        if (t.Status !== 'POSTED') return;
+        const amt = parseFloat(t.Amount) || 0;
+        if (t.TransactionType === 'INFLOW') revenue += amt;
+        if (t.TransactionType === 'OUTFLOW') expenses += amt;
+      });
+
+      if (txns.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-navy-400">No recent transactions recorded.</td></tr>';
+      } else {
+        tbody.innerHTML = txns.slice(0, 50).map(t => {
+          const voided = t.Status === 'VOID';
+          const type = String(t.TransactionType || '').toUpperCase();
+          return `<tr class="${voided ? 'text-navy-400 line-through' : ''}">
+            <td data-label="Txn ID" class="p-3 font-mono text-xs font-bold ${voided ? '' : 'text-navy-700'}">${esc(t.TransactionID)}</td>
+            <td data-label="Date" class="p-3">${fmtDate(t.Date)}</td>
+            <td data-label="Type" class="p-3"><span class="px-2 py-0.5 rounded text-xs font-bold ${TYPE_BADGE[type] || 'bg-navy-100 text-navy-800'}">${esc(type)}</span>${voided ? ' <span class="text-xs font-bold">VOID</span>' : (t.Status && t.Status !== 'POSTED' ? ` <span class="text-xs font-bold text-navy-600">${esc(t.Status)}</span>` : '')}</td>
+            <td data-label="Category" class="p-3">${esc(t.CategoryName || t.CategoryID)}</td>
+            <td data-label="Cohort" class="p-3 text-navy-600 m-hide">${esc(t.CohortID)}</td>
+            <td data-label="Imprest" class="p-3 font-mono text-xs text-navy-600 ${t.ImprestID ? '' : 'm-hide'}">${esc(t.ImprestID || '')}</td>
+            <td data-label="Amount" class="p-3 text-right font-bold ${voided ? '' : (TYPE_TEXT[type] || 'text-navy-800')}">${esc(money(t.Amount))}</td>
+          </tr>`;
+        }).join('');
+      }
+
+      // Money still held across all imprests (an overspent imprest reduces the total)
+      const imprestBal = (appState.imprests || []).reduce((sum, i) => sum + (parseFloat(i.BalanceOutstanding) || 0), 0);
+
+      document.getElementById('stat-revenue').innerText = money(revenue);
+      document.getElementById('stat-expenses').innerText = money(expenses);
+      document.getElementById('stat-imprest').innerText = money(imprestBal);
+      document.getElementById('stat-net').innerText = money(revenue - expenses);
+    }
+
+    function renderStudentLedgerTable() {
+      const tbody = document.getElementById('student-ledger-tbody');
+      if (!tbody) return;
+
+      // Only POSTED inflows recorded through the Student Fee form (description starts with "[Student:")
+      const feeTxns = (appState.transactions || []).filter(t =>
+        t.TransactionType === 'INFLOW' && t.Status === 'POSTED' && String(t.Description || '').startsWith('[Student:')
+      );
+
+      if (feeTxns.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-navy-400">No student payments recorded yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = feeTxns.map(t => `
+        <tr>
+          <td data-label="Txn ID" class="p-3 font-mono text-xs font-bold text-navy-700">${esc(t.TransactionID)}</td>
+          <td data-label="Date" class="p-3">${fmtDate(t.Date)}</td>
+          <td data-label="Student" class="p-3">
+            <div class="font-semibold text-navy-900">${esc(t.Description)}</div>
+          </td>
+          <td data-label="Cohort" class="p-3 text-navy-600">${esc(t.CohortID)}</td>
+          <td data-label="Amount" class="p-3 text-right font-bold text-emerald-600">${esc(money(t.Amount))}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderImprestTable() {
+      const tbody = document.getElementById('imprest-tbody');
+      const list = appState.imprests || [];
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-navy-400">No imprests issued yet.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = list.map(i => {
+        const canSpend = Number(i.BalanceOutstanding) > 0;
+        return `<tr>
+          <td data-label="Imprest" class="p-3 font-mono text-xs font-bold">${esc(i.ImprestID)}</td>
+          <td data-label="Issued on" class="p-3">${fmtDate(i.DateIssued)}</td>
+          <td data-label="Recipient" class="p-3 font-semibold">${esc(i.Recipient)}</td>
+          <td data-label="Purpose" class="p-3 text-navy-700">${esc(i.Purpose)}</td>
+          <td data-label="Issued" class="p-3 text-right font-bold">${esc(money(i.AmountIssued))}</td>
+          <td data-label="Spent" class="p-3 text-right">${esc(money(i.AmountSettled))}</td>
+          <td data-label="Outstanding" class="p-3 text-right font-bold ${Number(i.BalanceOutstanding) < 0 ? 'text-red-600' : 'text-gold-700'}">${esc(money(i.BalanceOutstanding))}</td>
+          <td data-label="Status" class="p-3"><span class="px-2 py-0.5 rounded text-xs font-bold ${STATUS_BADGE[i.Status] || 'bg-navy-100 text-navy-800'}">${esc(i.Status)}</span></td>
+          <td class="actions p-3 text-right">${canSpend ? `<button onclick="startImprestExpense('${esc(i.ImprestID)}')" class="text-xs font-semibold text-navy-800 bg-gold-50 hover:bg-gold-100 border border-gold-300 rounded px-2.5 py-1 transition whitespace-nowrap">Record expense</button>` : ''}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function renderAuditTable() {
+      const tbody = document.getElementById('audit-tbody');
+      const list = appState.audit || [];
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-navy-400">No audit entries yet.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = list.map(a => {
+        const change = a.Field
+          ? `${esc(a.Field)}: ${esc(a.OldValue || '(blank)')} &rarr; ${esc(a.NewValue || '(blank)')}`
+          : esc(a.Notes || '');
+        return `<tr>
+          <td data-label="Audit ID" class="p-3 font-mono text-xs font-bold text-navy-700">${esc(a.AuditID)}</td>
+          <td data-label="Time" class="p-3 whitespace-nowrap">${esc(a.Timestamp)}</td>
+          <td data-label="User" class="p-3 text-navy-700">${esc(a.User)}</td>
+          <td data-label="Action" class="p-3"><span class="px-2 py-0.5 rounded text-xs font-bold bg-navy-100 text-navy-800">${esc(a.Action)}</span></td>
+          <td data-label="Record type" class="p-3">${esc(a.RecordType)}</td>
+          <td data-label="Record ID" class="p-3 font-mono text-xs">${esc(a.RecordID)}</td>
+          <td data-label="Details" class="p-3 text-navy-700">${change}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    /* ---------- Form handlers ---------- */
+
+    // General Inflow + Expense forms
+    async function handleTransactionSubmit(e, type) {
+      e.preventDefault();
+      const form = e.target;
+      const btn = form.querySelector('button[type="submit"]');
+      const originalLabel = btn.innerHTML;
+      const busyLabel = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+      // A disabled Account select (imprest expense) is left out on purpose: the server uses the imprest's account.
+      const data = Object.fromEntries(new FormData(form).entries());
+      data.TransactionType = type;
+
+      if (!isConnected()) { alert('Demo Mode: ' + type + ' record simulated.'); return; }
+
+      setBusy(btn, true, busyLabel, originalLabel);
+      try {
+        let res = await callApi('saveTransaction', data);
+
+        // The expense is bigger than the imprest balance: ask before saving
+        if (res && res.status === 'CONFIRM') {
+          setBusy(btn, false, busyLabel, originalLabel);
+          if (!confirm(res.message + '\n\nRecord it anyway?')) return;
+          setBusy(btn, true, busyLabel, originalLabel);
+          data.ConfirmOverspend = 'YES';
+          res = await callApi('saveTransaction', data);
+        }
+
+        if (res && res.status === 'SUCCESS') {
+          alert('Saved! Transaction ID: ' + res.transactionID);
+          form.reset();
+          form.querySelector('input[type="date"]').value = todayStr();
+          onImprestSelected();
+          refreshData();
+        } else {
+          alert('Save failed. Please try again.');
+        }
+      } catch (err) {
+        reportError('Error saving: ', err);
+      } finally {
+        setBusy(btn, false, busyLabel, originalLabel);
+      }
+    }
+
+    // Issue Imprest modal
+    async function handleIssueImprest(e) {
+      e.preventDefault();
+      const form = e.target;
+      const btn = form.querySelector('button[type="submit"]');
+      const originalLabel = btn.innerHTML;
+
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      if (!isConnected()) { alert('Demo Mode: Imprest issue simulated.'); return; }
+
+      setBusy(btn, true, 'Issuing...', originalLabel);
+      try {
+        const res = await callApi('issueImprest', data);
+        if (res && res.status === 'SUCCESS') {
+          alert('Imprest issued: ' + res.imprestID + '\nFunding entry: ' + res.fundingTransactionID);
+          form.reset();
+          toggleModal('modal-issue-imprest', false);
+          refreshData();
+        } else {
+          alert('Could not issue imprest. Please try again.');
+        }
+      } catch (err) {
+        reportError('Error: ', err);
+      } finally {
+        setBusy(btn, false, 'Issuing...', originalLabel);
+      }
+    }
+
+    // Student fee form (saves the payment and downloads a PDF receipt)
+    async function handleStudentFeeSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const btn = document.getElementById('btn-submit-student-fee');
+      const originalLabel = `<i class="fa-solid fa-file-pdf"></i> Save & Generate PDF Receipt`;
+      const busyLabel = `<i class="fa-solid fa-spinner fa-spin"></i> Generating Receipt...`;
+
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      if (!isConnected()) { alert('Demo Mode: Direct PDF download simulated.'); return; }
+
+      setBusy(btn, true, busyLabel, originalLabel);
+      try {
+        const res = await callApi('recordStudentFeePayment', data);
+        if (res && res.status === 'SUCCESS') {
+          if (res.pdfBase64) {
+            downloadBase64File(res.pdfBase64, res.fileName || 'Receipt.pdf');
+            alert('Fee recorded (' + res.txnId + '). The PDF receipt is downloading. Check your Downloads folder or notifications.');
+          } else {
+            alert('Fee recorded (' + res.txnId + '), but the receipt could not be created:\n' +
+                  (res.pdfError || 'unknown error') + '\n\nThe payment is saved. Do not enter it again.');
+          }
+          form.reset();
+          form.querySelector('input[type="date"]').value = todayStr();
+          refreshData();
+        } else {
+          alert('Save failed. Please try again.');
+        }
+      } catch (err) {
+        reportError('Error: ', err);
+      } finally {
+        setBusy(btn, false, busyLabel, originalLabel);
+      }
+    }
+
+    // Download a PDF from Base64 data. A Blob link is more reliable than a data: link on Android Chrome.
+    function downloadBase64File(base64Data, fileName) {
+      const bytes = atob(base64Data);
+      const arr = new Uint8Array(bytes.length);
+      for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+      const url = URL.createObjectURL(new Blob([arr], { type: 'application/pdf' }));
+
+      const downloadLink = document.createElement('a');
+      downloadLink.href = url;
+      downloadLink.download = fileName;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    }
+
+    function filterStudentLedger() {
+      const query = document.getElementById('ledger-search').value.toLowerCase();
+      const rows = document.querySelectorAll('#student-ledger-tbody tr');
+
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(query) ? '' : 'none';
+      });
+    }
   </script>
 </body>
 </html>
