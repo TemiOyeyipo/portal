@@ -93,10 +93,10 @@
      * ============================================================ */
     (function () {
       const CFG = window.ABBS_CONFIG || {};
-      const API_URL = String(CFG.API_URL || '').trim();
+      const API_URL1 = String(CFG.API_URL1 || '').trim();
       const SESSION_KEY = 'abbs.sis.session';
 
-      window.isConnected = function () { return API_URL !== ''; };
+      window.isConnected = function () { return API_URL1 !== ''; };
       let session = null;   // { key } once signed in
 
       function store(kind) { try { return kind === 'local' ? window.localStorage : window.sessionStorage; } catch (e) { return null; } }
@@ -141,7 +141,7 @@
         const timer = setTimeout(() => ctl.abort(), 90000);
         let res;
         try {
-          res = await fetch(API_URL, {
+          res = await fetch(API_URL1, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain;charset=utf-8' },   // stays a "simple" request: no CORS pre-flight
             body: JSON.stringify({ action, key: session ? session.key : '', args: args || [] }),
@@ -153,7 +153,7 @@
         } finally { clearTimeout(timer); }
         let out;
         try { out = await res.json(); } catch (e) {
-          throw new Error('The server gave an unexpected answer. Check that the Apps Script web app is deployed with "Who has access: Anyone" and that API_URL in config.js is right.');
+          throw new Error('The server gave an unexpected answer. Check that the Apps Script web app is deployed with "Who has access: Anyone" and that API_URL1 in config.js is right.');
         }
         if (!out || !out.ok) { const err = new Error((out && out.error) || 'The request failed.'); err.code = out && out.code; throw err; }
         return out.data;
@@ -291,7 +291,7 @@
     </div>
   </header>
 
-  <!-- Shown only while config.js has no API_URL -->
+  <!-- Shown only while config.js has no API_URL1 -->
   <div id="demo-banner" style="display:none; background:#F59E0B22; color:#F59E0B; border-bottom:1px solid #F59E0B55; text-align:center; font-size:12px; padding:8px 10px;">
     Demo mode: this page is not connected to your Google Sheet yet. Add your Apps Script URL in <strong>config.js</strong>.
   </div>
