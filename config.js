@@ -11,3 +11,15 @@ window.ABBS_CONFIG = {
 };
 
 // NEVER put the access key in this file. Staff type it on the sign-in screen. 
+// ABBS SIS: settings for the web page.
+// Change the text between the quotes, save the file, then refresh the page.
+window.ABBS_CONFIG = {
+  // 1) Your Google Apps Script "Web app" URL for this SIS project (it ends in /exec).
+  //    Leave it empty to preview the page with an empty, demo-mode dashboard.
+  API_URL2: '',
+
+  // 2) Where the "Attendance (Webcam)" menu item sends people.
+  ATTENDANCE_URL: 'https://temioyeyipo.github.io/attendance/index.html'
+};
+
+// NEVER put the access key in this file. Staff type it on the sign-in screen.
