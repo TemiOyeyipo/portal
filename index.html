@@ -19,7 +19,7 @@
     [hidden] { display: none !important; }
     html, body { height: 100%; margin: 0; }
     body {
-      display: flex; flex-direction: column; height: 100vh; height: 100dvh;
+      display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh;
       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       color: var(--navy-900); background: var(--navy-50);
       -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent;
@@ -33,7 +33,7 @@
 
     /* ---------- top bar ---------- */
     .topbar {
-      flex: none; position: relative; z-index: 30;
+      flex: none; position: sticky; top: 0; z-index: 30;
       display: flex; align-items: center; gap: 10px;
       height: calc(var(--bar) + env(safe-area-inset-top));
       padding: env(safe-area-inset-top) max(10px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
@@ -56,15 +56,9 @@
       background: #fff; border-radius: 9px; padding: 3px; box-shadow: 0 0 0 2px var(--gold-400);
     }
 
-    /* thin gold loading line under the top bar */
-    #bar { position: absolute; left: 0; right: 0; bottom: -3px; height: 3px; overflow: hidden; opacity: 0; transition: opacity .2s; pointer-events: none; }
-    #bar::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 35%; background: #fff; animation: slide 1s ease-in-out infinite; }
-    body.loading #bar { opacity: 1; }
-    @keyframes slide { 0% { left: -35%; } 100% { left: 100%; } }
-
     /* ---------- menu drawer ---------- */
     #scrim {
-      position: fixed; inset: 0; z-index: 40; background: rgba(7, 21, 42, .6);
+      position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 40; background: rgba(7, 21, 42, .6);
       opacity: 0; visibility: hidden; transition: opacity .2s, visibility 0s .2s;
     }
     #drawer {
@@ -86,14 +80,11 @@
     }
     .navlink .ic { color: var(--gold-400); }
     .navlink:hover { background: var(--navy-800); }
-    .navlink[aria-current="page"] { background: var(--navy-800); border-left-color: var(--gold-400); color: #fff; }
+    .navlink .go { margin-left: auto; width: 1rem; height: 1rem; opacity: .6; }
     .drawer-foot { margin-top: auto; padding: 14px 18px; font-size: .78rem; color: var(--navy-400); border-top: 1px solid var(--navy-800); }
 
-    /* ---------- stage: home page + app frames ---------- */
-    #stage { position: relative; flex: 1; min-height: 0; }
-    .pane { position: absolute; inset: 0; width: 100%; height: 100%; }
-    iframe.pane { border: 0; background: var(--navy-50); }
-    #home { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    /* ---------- home page ---------- */
+    #home { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 
     .hero {
       background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-800) 60%, var(--navy-700) 100%);
@@ -124,17 +115,6 @@
     .card:hover .open .ic { transform: translateX(4px); }
     .foot { margin: 28px 0 0; text-align: center; color: var(--navy-400); font-size: .8rem; }
 
-    /* ---------- "cannot find this app" panel ---------- */
-    #status { display: flex; align-items: center; justify-content: center; padding: 20px; background: var(--navy-50); overflow-y: auto; }
-    .status-card { max-width: 30rem; background: #fff; border: 1px solid var(--navy-100); border-top: 4px solid var(--gold-400); border-radius: 16px; padding: 24px; text-align: center; box-shadow: 0 8px 24px rgba(11, 31, 58, .1); }
-    .status-card h2 { margin: 0 0 8px; font-size: 1.25rem; }
-    .status-card p { margin: 0 0 16px; color: var(--navy-600); line-height: 1.5; }
-    .status-card code { background: var(--gold-50); border: 1px solid #F0DE93; border-radius: 6px; padding: 1px 6px; font-size: .9em; word-break: break-all; }
-    .btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-    .btn { min-height: 46px; padding: 0 18px; border-radius: 10px; border: 1px solid var(--navy-200); background: #fff; color: var(--navy-800); font: inherit; font-weight: 700; cursor: pointer; }
-    .btn.primary { background: var(--gold-400); border-color: var(--gold-400); color: var(--navy-900); }
-    .btn:hover { filter: brightness(.96); }
-
     @media (min-width: 768px) {
       .hero { padding: 52px 32px 96px; }
       .wrap { padding: 0 32px 40px; }
@@ -152,7 +132,6 @@
     <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
     <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
     <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></symbol>
-    <symbol id="i-reload" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></symbol>
     <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
     <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></symbol>
     <symbol id="i-cap" viewBox="0 0 24 24"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v6"/></symbol>
@@ -169,15 +148,8 @@
     <div class="brand">
       <span class="logo-tile brand-fallback"><svg class="ic"><use href="#i-cap"/></svg></span>
       <img class="brand-logo" alt="ABBS logo" hidden>
-      <span id="page-title" class="brand-title">ABBS Portal</span>
+      <span class="brand-title">ABBS Portal</span>
     </div>
-    <button id="reload-btn" class="iconbtn" type="button" aria-label="Reload this app" title="Reload this app" hidden>
-      <svg class="ic"><use href="#i-reload"/></svg>
-    </button>
-    <a id="newtab-btn" class="iconbtn" href="#" target="_blank" rel="noopener" aria-label="Open this app in a new tab" title="Open this app in a new tab" hidden>
-      <svg class="ic"><use href="#i-external"/></svg>
-    </a>
-    <div id="bar" aria-hidden="true"></div>
   </header>
 
   <!-- MENU DRAWER -->
@@ -189,38 +161,32 @@
       <span class="brand-title">ABBS Portal</span>
       <button id="close-btn" class="iconbtn" type="button" aria-label="Close menu"><svg class="ic"><use href="#i-close"/></svg></button>
     </div>
-    <div class="drawer-label">Switch to</div>
+    <div class="drawer-label">Open</div>
     <ul id="menu-list"></ul>
-    <div class="drawer-foot">Each app keeps its own sign-in and its place, so you can switch back and forth freely.</div>
+    <div class="drawer-foot">Each app opens in its own new tab, so it keeps its own sign-in and you can still get back to this menu.</div>
   </nav>
 
-  <!-- STAGE: landing page and the apps -->
-  <main id="stage">
-    <section id="home" class="pane" aria-label="Portal home">
-      <div class="hero">
-        <div class="hero-inner">
-          <p class="eyebrow">ABBS Portal</p>
-          <h1>Welcome to the ABBS Portal</h1>
-          <p class="lead">Pick a workspace below. You can switch between them at any time with the menu button
-            <svg class="ic"><use href="#i-menu"/></svg> at the top left.</p>
-        </div>
+  <!-- HOME PAGE -->
+  <section id="home" aria-label="Portal home">
+    <div class="hero">
+      <div class="hero-inner">
+        <p class="eyebrow">ABBS Portal</p>
+        <h1>Welcome to the ABBS Portal</h1>
+        <p class="lead">Pick a workspace below. Each one opens in its own new tab. You can come back here any time with the menu button
+          <svg class="ic"><use href="#i-menu"/></svg> at the top left.</p>
       </div>
-      <div class="wrap">
-        <div id="cards" class="cards"></div>
-        <p class="foot">&copy; <span id="year"></span> ABBS</p>
-      </div>
-    </section>
-
-    <div id="frames"></div>
-
-    <section id="status" class="pane" hidden aria-live="polite"></section>
-  </main>
+    </div>
+    <div class="wrap">
+      <div id="cards" class="cards"></div>
+      <p class="foot">&copy; <span id="year"></span> ABBS</p>
+    </div>
+  </section>
 
   <script>
     /* ============================================================
      * EDIT HERE: the apps in your portal
      * ------------------------------------------------------------
-     * id          short name used in the address (index.html#finance)
+     * id          used only internally; can be anything short and unique
      * name        shown in the menu and on the home page
      * path        the HTML file of the app, relative to this index.html
      * icon        cap | calendar | cash | grid
@@ -228,7 +194,7 @@
      * To add an app, copy one line and change it. Order here = order in the menu.
      * ============================================================ */
     const MODULES = [
-      { id: 'sis',        name: 'Student SIS', path: 'student.html',        icon: 'cap',      description: 'Student records, enrolment and profiles.' },
+      { id: 'sis',        name: 'Student SIS', path: 'student.html',    icon: 'cap',      description: 'Student records, enrolment and profiles.' },
       { id: 'attendance', name: 'Attendance',  path: 'attendance.html', icon: 'calendar', description: 'Daily registers and attendance tracking.' },
       { id: 'finance',    name: 'Finance',     path: 'finance.html',    icon: 'cash',     description: 'Fees, expenses, petty cash and receipts.' }
     ];
@@ -242,29 +208,28 @@
 
     /* ============================================================
      * Nothing below needs editing
+     * ------------------------------------------------------------
+     * Every app opens with a plain link (target="_blank"), the same as if you had
+     * typed its address and pressed Cmd/Ctrl-click yourself. Browsers never block
+     * that, on desktop or on Android, and it needs no JavaScript to work.
      * ============================================================ */
     const $ = id => document.getElementById(id);
     const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const icon = key => `<svg class="ic" aria-hidden="true"><use href="#i-${['cap', 'calendar', 'cash', 'grid'].includes(key) ? key : 'grid'}"/></svg>`;
 
-    const home = $('home'), frames = $('frames'), status = $('status');
-    const menuBtn = $('menu-btn'), drawer = $('drawer'), pageTitle = $('page-title');
-    const reloadBtn = $('reload-btn'), newTabBtn = $('newtab-btn');
-    const frameById = {};
-    let current = null;      // the module on screen, or null for the home page
-    let openToken = 0;
-
     /* ---------- build the menu and the home cards from MODULES ---------- */
-    $('menu-list').innerHTML =
-      `<li><a class="navlink" href="#home" data-id="home"><svg class="ic" aria-hidden="true"><use href="#i-home"/></svg><span>Home</span></a></li>` +
-      MODULES.map(m => `<li><a class="navlink" href="#${esc(m.id)}" data-id="${esc(m.id)}">${icon(m.icon)}<span>${esc(m.name)}</span></a></li>`).join('');
+    $('menu-list').innerHTML = MODULES.map(m => `
+      <li><a class="navlink" href="${esc(m.path)}" target="_blank" rel="noopener">
+        ${icon(m.icon)}<span>${esc(m.name)}</span>
+        <svg class="ic go" aria-hidden="true"><use href="#i-external"/></svg>
+      </a></li>`).join('');
 
     $('cards').innerHTML = MODULES.map(m => `
-      <a class="card" href="#${esc(m.id)}">
+      <a class="card" href="${esc(m.path)}" target="_blank" rel="noopener">
         <span class="card-icon">${icon(m.icon)}</span>
         <h2>${esc(m.name)}</h2>
         <p>${esc(m.description)}</p>
-        <span class="open">Open <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
+        <span class="open">Open in new tab <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg></span>
       </a>`).join('');
     $('year').textContent = new Date().getFullYear();
 
@@ -281,12 +246,12 @@
     });
 
     /* ---------- menu drawer ---------- */
+    const menuBtn = $('menu-btn'), drawer = $('drawer');
     function openMenu() {
       document.body.classList.add('menu-open');
       drawer.setAttribute('aria-hidden', 'false');
       menuBtn.setAttribute('aria-expanded', 'true');
-      const target = drawer.querySelector('.navlink[aria-current="page"]') || drawer.querySelector('.navlink');
-      setTimeout(() => target && target.focus(), 30);
+      setTimeout(() => drawer.querySelector('.navlink').focus(), 30);
     }
     function closeMenu() {
       const hadFocus = drawer.contains(document.activeElement);
@@ -300,108 +265,19 @@
     menuBtn.addEventListener('click', () => (menuIsOpen() ? closeMenu() : openMenu()));
     $('close-btn').addEventListener('click', closeMenu);
     $('scrim').addEventListener('click', closeMenu);
+    // Opening an app closes the menu but does not navigate this tab away, since the
+    // links are target="_blank" - so just close the drawer once one is clicked.
     drawer.addEventListener('click', e => { if (e.target.closest('.navlink')) closeMenu(); });
     document.addEventListener('keydown', e => {
       if (!menuIsOpen()) return;
       if (e.key === 'Escape') { closeMenu(); return; }
       if (e.key === 'Tab') {                        // keep keyboard focus inside the open menu
-        const items = [...drawer.querySelectorAll('button, a[href]')].filter(el => !el.hidden);
+        const items = [...drawer.querySelectorAll('button, a[href]')];
         const first = items[0], last = items[items.length - 1];
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
       }
     });
-
-    /* ---------- showing things ---------- */
-    function setLoading(on) { document.body.classList.toggle('loading', !!on); }
-
-    function setActive(id) {
-      document.querySelectorAll('.navlink').forEach(a => {
-        if (a.dataset.id === id) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
-      });
-    }
-
-    function showHome() {
-      openToken++;
-      current = null;
-      home.hidden = false; status.hidden = true;
-      Object.values(frameById).forEach(f => f.hidden = true);
-      setLoading(false); setActive('home');
-      pageTitle.textContent = 'ABBS Portal'; document.title = 'ABBS Portal';
-      reloadBtn.hidden = true; newTabBtn.hidden = true;
-    }
-
-    function showNotFound(mod) {
-      status.innerHTML = `
-        <div class="status-card">
-          <h2>We could not open ${esc(mod.name)}</h2>
-          <p>The file <code>${esc(mod.path)}</code> was not found. Check that it is uploaded to the same folder as
-             <code>index.html</code>, or correct its name in the <code>MODULES</code> list at the top of the script in <code>index.html</code>.</p>
-          <div class="btns">
-            <button class="btn primary" type="button" id="retry-btn">Try again</button>
-            <button class="btn" type="button" id="home-btn">Back to home</button>
-          </div>
-        </div>`;
-      status.hidden = false;
-      $('retry-btn').onclick = () => openModule(mod);
-      $('home-btn').onclick = () => { location.hash = '#home'; };
-    }
-
-    // Some hosts refuse HEAD or block the check; only a clear "not found" counts as missing.
-    async function fileExists(path) {
-      try {
-        const r = await fetch(path, { method: 'HEAD', cache: 'no-store' });
-        return r.status !== 404 && r.status !== 410;
-      } catch (e) { return true; }
-    }
-
-    function createFrame(mod) {
-      const f = document.createElement('iframe');
-      f.className = 'pane';
-      f.title = mod.name;
-      f.dataset.id = mod.id;
-      f.allow = 'clipboard-write; fullscreen';
-      f.addEventListener('load', () => { if (current && current.id === mod.id) setLoading(false); });
-      f.src = mod.path;
-      frames.appendChild(f);
-      frameById[mod.id] = f;
-      return f;
-    }
-
-    // Apps stay loaded once opened, so switching back is instant and nothing typed is lost.
-    async function openModule(mod) {
-      const token = ++openToken;
-      current = mod;
-      home.hidden = true; status.hidden = true;
-      Object.values(frameById).forEach(f => f.hidden = f.dataset.id !== mod.id);
-      setActive(mod.id);
-      pageTitle.textContent = mod.name; document.title = mod.name + ' · ABBS Portal';
-      reloadBtn.hidden = false; newTabBtn.hidden = false; newTabBtn.href = mod.path;
-
-      if (frameById[mod.id]) { setLoading(false); return; }
-
-      setLoading(true);
-      const ok = await fileExists(mod.path);
-      if (token !== openToken) return;                 // the person already moved on
-      if (!ok) { setLoading(false); showNotFound(mod); return; }
-      createFrame(mod);
-    }
-
-    reloadBtn.addEventListener('click', () => {
-      const f = current && frameById[current.id];
-      if (!f) return;
-      setLoading(true);
-      try { f.contentWindow.location.reload(); } catch (e) { f.src = f.src; }
-    });
-
-    /* ---------- address (#finance) decides what is shown, so Back and links just work ---------- */
-    function route() {
-      const id = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
-      const mod = MODULES.find(m => m.id === id);
-      if (mod) openModule(mod); else showHome();
-    }
-    window.addEventListener('hashchange', route);
-    route();
   </script>
 </body>
 </html>
